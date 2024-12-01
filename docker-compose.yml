@@ -1,0 +1,251 @@
+version: "3.8"
+
+services:
+  crontab:
+    build:
+      context: ./crontab
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      DB_HOST: postgres
+      DB_PORT: 5432
+    volumes:
+      - ./crontab/clean.sh:/usr/local/bin/script.sh
+    depends_on:
+      - postgres
+    networks:
+      - postgres_network
+      - nginx_network
+
+  postgres:
+    build: ./postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - postgres_network
+
+  elasticsearch:
+    build:
+      context: ./elasticsearch
+    environment:
+      - node.name=es-node
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - KIBANA_PASSWORD=${KIBANA_PASSWORD}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    expose:
+      - "9200"
+    healthcheck:
+      test: curl -s http://localhost:9200 >/dev/null || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 50
+    networks:
+      - nginx_network
+
+  kibana:
+    build:
+      context: ./kibana
+      args:
+        XPACK_ENCRYPTED_SAVED_OBJECTS_ENCRYPTION_KEY: ${KIBANA_ENCRYPTION_KEY}
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+      - XPACK_ENCRYPTED_SAVED_OBJECTS_ENCRYPTION_KEY=${KIBANA_ENCRYPTION_KEY}
+      - XPACK_SECURITY_ENCRYPTION_KEY=${KIBANA_ENCRYPTION_KEY}
+      - XPACK_REPORTING_ENCRYPTION_KEY=${KIBANA_ENCRYPTION_KEY}
+      - XPACK_SCREENSHOTTING_BROWSER_CHROMIUM_DISABLE_SANDBOX=true
+      - XPACK_OBSERVABILITY_AI_ASSISTANT_ENABLED=false
+      - SERVER_BASEPATH=/kibana
+      - SERVER_REWRITEBASEPATH=true
+      # - NODE_OPTIONS=--no-legacy-provider
+    expose:
+      - "5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - nginx_network
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.12.2
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTIC_USERNAME=elastic
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+      - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+    depends_on:
+      - elasticsearch
+    networks:
+      - nginx_network
+
+  ruby_user_management:
+    build: ./ruby_user_management
+    environment:
+      DATABASE_URL: postgres://user:password@postgres:5432/ft_transcendence_db
+      SECRET_KEY: ${SECRET_KEY}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      API_CLIENT: ${API_CLIENT42}
+      API_SECRET: ${API_SECRET42}
+      REDIR_URL: ${REDIR_URL42}
+      EMAIL: ${EMAIL}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+    depends_on:
+      - postgres
+      - logstash
+    volumes:
+      - ./ruby_user_management:/app
+    networks:
+      - nginx_network
+      - postgres_network
+      - smtp_network
+
+  ruby_ssr:
+    build: ./ruby_ssr
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+    depends_on:
+      - ruby_user_management
+    volumes:
+      - ./ruby_ssr:/app
+    networks:
+      - nginx_network
+
+  ruby_pong:
+    build: ./ruby_pong
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    depends_on:
+      - postgres
+      - logstash
+    volumes:
+      - ./ruby_pong:/app
+    networks:
+      - nginx_network
+
+  ruby_friend:
+    build: ./ruby_friend
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+    depends_on:
+      - postgres
+      - logstash
+    volumes:
+      - ./ruby_friend:/app
+    networks:
+      - nginx_network
+
+  ruby_rgpd:
+    build: ./ruby_rgpd
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    depends_on:
+      - postgres
+      - logstash
+    volumes:
+      - ./ruby_rgpd:/app
+    expose:
+      - "4567"
+    networks:
+      - nginx_network
+      - postgres_network
+
+  ruby_pong_api:
+    build: ./ruby_pong_api
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    depends_on:
+      - postgres
+      - logstash
+    volumes:
+      - ./ruby_pong_api:/app
+    expose:
+      - "4571"
+    networks:
+      - nginx_network
+      - postgres_network
+
+  nginx:
+    build: ./nginx
+    depends_on:
+      - ruby_user_management
+      - ruby_ssr
+      - ruby_pong
+      - ruby_rgpd
+      - ruby_pong_api
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - nginx_network
+
+  adminer:
+    image: adminer
+    restart: always
+    depends_on:
+      - postgres
+    networks:
+      - nginx_network
+      - postgres_network
+
+  mongodb:
+    build: ./mongodb
+    container_name: mongodb_container
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    expose:
+      - "27017"
+    networks:
+      - mongo_network
+    volumes:
+      - mongodb_data:/data/db
+
+  image_ruby:
+    build: ./image_ruby
+    volumes:
+      - ./image_ruby:/app
+    expose:
+      - "4572"
+    networks:
+      - mongo_network
+      - nginx_network
+
+volumes:
+  postgres-data:
+  mongodb_data:
+  esdata:
+
+networks:
+  postgres_network:
+    driver: bridge
+  nginx_network:
+    driver: bridge
+  smtp_network:
+    driver: bridge
+  mongo_network:
+    driver: bridge

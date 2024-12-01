@@ -1,0 +1,10 @@
+source 'https://rubygems.org'
+
+gem 'pg'
+gem 'bcrypt'
+gem 'jwt'
+gem 'rerun'
+gem 'tzinfo'
+gem 'mail'
+gem 'connection_pool'
+gem 'logstash-logger'

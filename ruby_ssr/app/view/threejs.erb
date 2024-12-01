@@ -1,0 +1,28 @@
+<style>
+		/* Définir la taille du body et du html à 100% pour que l'on puisse centrer le canvas */
+		#game {
+		  height: 100%;
+		  margin: 0;
+		  display: flex;
+		  justify-content: center; /* Centrer horizontalement */
+		  align-items: center; /* Centrer verticalement */
+		}
+	
+		/* Canvas Three.js, nous allons lui donner une taille dynamique */
+		canvas {
+		  width: 100%;
+		  height: 100%;
+		  display: block; /* Enlever les marges/blocs supplémentaires */
+		}
+</style>
+<script type="module" crossorigin src="/static/threejs/assets/index-BtnSyGla.js"></script>
+<script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@<version>/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@<version>/examples/jsm/"
+        }
+      }
+    </script>
+    <link rel="stylesheet" crossorigin href="/static/threejs/assets/index-C7dNCLWq.css" />
+<div id="zombiesDiv"></div>

@@ -1,0 +1,72 @@
+<div class="container">
+  <a class="navbar-brand" href="#">
+    <img src="/assets/42logo.png" alt="Logo 42">
+  </a>
+
+  <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0 mx-auto">
+    <li class="clickable"><a id="home_link" class="btn btn-link text-white">Home</a></li>
+    <li class="clickable"><a id="pong_link" class="btn btn-link text-white">Local Pong</a></li>
+    <li class="clickable"><a id="threejs_link" class="btn btn-link text-white">Zombies ThreeJS</a></li>
+    <% if @user_logged %>
+      <li class="clickable"><a id="ranking_link" class="btn btn-link text-white">Ranking</a></li>
+      <li class="clickable"><a id="rgpd_link" class="btn btn-link text-white">RGPD</a></li>
+    <% end %>
+  </ul>
+
+  <% if @user_logged %>
+    <div class="text-end">
+      <button id="button_logout" type="button" class="btn btn-outline-light me-2">Logout</button>
+      <button id="button_profile" type="button" class="btn btn-primary">Profile</button>
+
+      <div class="dropdown d-inline-block">
+        <button id="friends_button" type="button" class="btn btn-link text-white" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="fas fa-user-friends fa-2x"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" style="max-height: 200px; overflow-y: auto;">
+          <li>
+            <a class="dropdown-item" id="add_friend_button">
+              <svg class="bi" width="16" height="16"><use xlink:href="#plus-circle"/></svg> Add Friend
+            </a>
+          </li>
+        <% @friends.each do |friend| %>
+          <% friend_name = friend["requester_id"].to_i == @user_logged["user_id"].to_i ? friend["receiver_username"] : friend["requester_username"] %>
+          <% friend_id = friend["requester_id"].to_i == @user_logged["user_id"].to_i ? friend["receiver_id"] : friend["requester_id"] %>
+          <% friendship_id = friend["friendship_id"] %>
+
+          <% if friend["status"] == "pending" %>
+            <% if friend["receiver_id"].to_i == @user_logged["user_id"].to_i %>
+              <li>
+                <a class="dropdown-item d-flex justify-content-between align-items-center">
+                  <div class="username">
+                    <%= friend["requester_username"] %>
+                  </div>
+                  <div class="action-icons">
+                    <i class="fas fa-check-circle text-success accept-request" role="button" title="Accepter" data-friendship-id="<%= friendship_id %>"></i>
+                    <i class="fas fa-times-circle text-danger ms-2 reject-request" role="button" title="Refuser" data-friendship-id="<%= friendship_id %>"></i>
+                  </div>
+                </a>
+              </li>
+            <% else %>
+              <li class="dropdown-item d-flex justify-content-between align-items-center">
+                <div class="text-muted" data-friendship-id="<%= friendship_id %>"><%= friend_name %></div>
+                <div class="badge badge-secondary">En attente</div>
+              </li>
+            <% end %>
+          <% else %>
+            <li>
+                <a class="dropdown-item" data-friend-id="<%= friend_id %>" data-friend-name="<%= friend_name %>" data-friendship-id="<%= friendship_id %>" onclick="openFriendModal('<%= friend_id %>', '<%= friend_name %>', '<%= friendship_id%>')">
+                  <span id="<%= friend_id %>" class="status-indicator offline"></span> <%= friend_name %>
+                </a>
+            </li>
+          <% end %>
+        <% end %>
+
+        </ul>
+      </div>
+  <% else %>
+    <div class="text-end">
+      <button id="button_login" type="button" class="btn btn-outline-light me-2">Login</button>
+      <button id="button_register" type="button" class="btn btn-primary">Sign-up</button>
+    </div>
+  <% end %>
+</div>

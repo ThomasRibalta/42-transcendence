@@ -1,0 +1,29 @@
+<div class="container mt-5">
+    <h2 class="text-center">User's Scoreboard</h2>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Rank points</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @users.each do |user| %>
+          <tr>
+            <td><%= user["id"] %></td>
+            <td><%= user["username"] %></td>
+            <td><%= user["email"] %></td>
+            <td><%= user["role"] == '0' ? 'Utilisateur' : 'Admin' %></td>
+            <td><%= user["rank_points"] %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <% (1..@nPages).each do |i| %>
+      <a href="/ranking/<%= i %>" class="btn btn-primary <%= 'active' if i == @current_page %>"><%= i %></a>
+    <% end %>
+  </div>

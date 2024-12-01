@@ -1,0 +1,71 @@
+<style>
+    .profile-pic {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .profile-info {
+      margin-bottom: 20px;
+    }
+
+    .history {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    .profile-btn {
+      margin-top: 10px;
+    }
+
+    .rank-info {
+      background-color: #e9ecef;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+</style>
+
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-4 text-center">
+      <img src="<%= @user["img_url"] %>" alt="Profile Photo" class="profile-pic mb-3">
+      <div class="profile-info">
+        <h3><%= @user["username"] %></h3>
+        <p> Friend id: <%= @user["id"] %></p>
+        <p>Email: <%= @user["email"] %></p>
+        <button id="edit_profile_button" class="btn btn-primary profile-btn">Edit Profile</button>
+        <button id="delete_profile_button" data-user-id="<%= @user["id"] %>" class="btn btn-danger profile-btn">Delete</button>
+      </div>
+
+      <div class="rank-info">
+        <h4>Player stats</h4>
+        <p>Wins: <%= @stats["nb_win"] %></p>
+        <p>Losses: <%= @stats["nb_lose"] %></p>
+        <p>Games Played: <%= @stats["nb_game"] %></p>
+        <p>Tournaments wins: <%= @stats["nb_win_tournament"] %></p>
+        <p>Rank Points: <%= @stats["rank_points"] %></p>
+      </div>
+    </div>
+
+    <div class="history mt-4">
+      <% if @stats && @stats["games"] && @stats["games"].any? %>
+        <h4 class="mb-3">Game History</h4>
+        <ul class="list-group">
+          <% @stats["games"].each_with_index do |game, index| %>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>
+                <strong>Game <%= index + 1 %></strong>: <%= game_result(game, @user["id"]) %> <%= game["created_at"] %>
+              </span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-muted">No games played yet.</p>
+      <% end %>
+    </div>
+  </div>
+</div>
+

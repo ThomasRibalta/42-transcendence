@@ -1,0 +1,7 @@
+source "https://rubygems.org"
+
+gem "webrick"
+gem 'rerun'
+gem 'tzinfo'
+gem 'mongo'
+gem 'rack'

@@ -1,0 +1,27 @@
+<div class="container mt-5">
+    <h2 class="text-center">Tournament's list</h2>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Host</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @tournaments.each do |tournament| %>
+          <tr>
+            <td><%= tournament["id"] %></td>
+            <td><%= tournament["name"] %></td>
+            <td><%= tournament["host_id"] %></td>
+            <td>
+              <button data-tournament-id="<%= tournament["id"] %>" class="btn btn-primary join_tournament_btn">Join</button>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <button id="create_tournaments" class="btn btn-primary"> Create Tournament </button>
+</div>

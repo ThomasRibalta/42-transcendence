@@ -1,0 +1,38 @@
+<script src="/static/edit-profile.js"></script>
+<div class="container">
+    <h2 class="text-center mb-4">Profile Edit</h2>
+
+    <% if @user_info["login_type"] == "1" %>
+        <div class="alert alert-info text-center">
+            You are connected via 42 and cannot modify your email or password.
+        </div>
+    <% end %>
+
+    <form id="form_edit_profile">
+        <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input name="username" type="text" class="form-control" id="username" value="<%= @user_info["username"] %>" placeholder="Enter your username">
+        </div>
+
+        <% unless @user_info["login_type"] == "1" %>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input name="email" type="email" class="form-control" id="email" value="<%= @user_info["email"] %>" placeholder="Enter your email">
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input name="password" type="password" class="form-control" id="password" placeholder="Enter a new password">
+            </div>
+        <% end %>
+
+        <div class="mb-3">
+            <label for="profilePicture" class="form-label">Profile Picture</label>
+            <input name="img_url" type="file" class="form-control" id="img_url">
+        </div>
+
+        <input type="hidden" id="user_id" value="<%= @user_info['id'] %>">
+
+        <button type="submit" class="btn btn-primary w-100">Update Profile</button>
+    </form>
+</div>

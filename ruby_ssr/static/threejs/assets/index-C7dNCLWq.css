@@ -1,0 +1,29 @@
+#score_text {
+    visibility: visible;
+    font-family: Courier New,Courier,monospace;
+    position: absolute;
+    text-align: center;
+    color: #fff;
+    top: 700px;
+    left: calc(50% - 580px)
+}
+
+#round_text {
+    visibility: visible;
+    font-family: Courier New,Courier,monospace;
+    position: absolute;
+    text-align: center;
+    color: #fff;
+    top: 700px;
+    left: calc(50% + 540px)
+}
+
+#info_text {
+    visibility: visible;
+    font-family: Courier New,Courier,monospace;
+    position: absolute;
+    text-align: center;
+    color: #fff;
+    top: 100px;
+    left: calc(50% - 580px)
+}
